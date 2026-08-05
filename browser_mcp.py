@@ -1,3 +1,25 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "mcp>=1.27,<2",
+#     "selenium>=4.20",
+#     "websocket-client>=1.8",
+#     "python-dotenv>=1.2",
+#     "uvicorn>=0.30",
+#     "sse-starlette>=2.1",
+#     "langchain-openai>=1.4",
+# ]
+# ///
+"""浏览器 MCP Server：提供 57 个浏览器自动化工具，支持 stdio/SSE 双模式。
+
+快速使用（推荐 uv，无需手动创建虚拟环境）：
+    uv run browser_mcp.py                 # 自动装依赖并运行（stdio 模式）
+    MCP_TRANSPORT=sse uv run browser_mcp.py  # SSE 远程模式
+
+传统方式（需自建虚拟环境）：
+    pip install -r requirements.txt
+    python browser_mcp.py
+"""
 import base64
 import json
 import os
