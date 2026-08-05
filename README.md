@@ -139,7 +139,7 @@ MCP_PORT=8765
 
 ### stdio 模式
 
-适用于 Claude Desktop、Trae 等 MCP 客户端的本地子进程调用：
+适用于 Claude Desktop、Trae 等 MCP 客户端的本地子进程调用。所有配置项可直接写在 `env` 字段中，无需创建 `agent.env` 文件：
 
 ```json
 {
@@ -148,18 +148,39 @@ MCP_PORT=8765
       "command": "uv",
       "args": ["run", "/absolute/path/to/browser_mcp.py"],
       "env": {
-        "MCP_TRANSPORT": "stdio"
+        "MCP_TRANSPORT": "stdio",
+        "CHROME_PATH": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "MODEL_NAME": "deepseek-chat",
+        "OPENAI_API_KEY": "sk-your-api-key-here",
+        "OPENAI_BASE_URL": "https://api.deepseek.com/v1"
       }
     }
   }
 }
 ```
 
+**必填项**：
+- `MODEL_NAME` / `OPENAI_API_KEY` / `OPENAI_BASE_URL`：LLM 配置（用于 `open_browser` 工具的自然语言 URL 推断）
+
+**可选项**：
+- `CHROME_PATH`：浏览器可执行文件路径。Chrome 装在非默认位置或使用 Edge/Chromium 时填写
+- `MCP_TRANSPORT`：传输模式，默认 `stdio`
+
+**CHROME_PATH 各平台示例**：
+
+| 平台 | 值 |
+|------|-----|
+| Windows - Chrome | `C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe` |
+| Windows - Edge | `C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe` |
+| macOS | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` |
+| Linux | `/usr/bin/google-chrome` |
+
 > 不使用 uv 时，`command` 改为 Python 解释器路径，`args` 改为 `["/absolute/path/to/browser_mcp.py"]`。
+> Windows 路径中的反斜杠在 JSON 里需转义为双反斜杠 `\\`。
 
 ### SSE 模式
 
-先在终端启动 Server：
+先在终端启动 Server（通过环境变量或 `agent.env` 传入配置）：
 
 ```bash
 MCP_TRANSPORT=sse uv run browser_mcp.py
@@ -177,6 +198,8 @@ MCP_TRANSPORT=sse uv run browser_mcp.py
   }
 }
 ```
+
+> SSE 模式下 Server 单独运行，浏览器路径等配置通过 `agent.env` 或启动命令的环境变量传入，客户端只需连接 URL。
 
 ## 工具列表
 
