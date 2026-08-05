@@ -1,6 +1,6 @@
-# 项目依赖（top-level）
-# 虚拟环境: .venv (Python 3.12)
-# 安装: .venv\Scripts\python.exe -m pip install -r requirements.txt
+# Browser MCP Server 依赖
+# 安装: pip install -r requirements.txt
+# 或免虚拟环境: uv run browser_mcp.py
 
 # mcp 必须锁在 1.x：2.0 移除了 mcp.server.fastmcp 模块路径，
 # 会破坏 browser_mcp.py 的 `from mcp.server.fastmcp import FastMCP`
@@ -11,17 +11,10 @@ mcp>=1.27,<2
 uvicorn>=0.30
 sse-starlette>=2.1
 
-# browser_mcp.py 浏览器自动化核心依赖
+# 浏览器自动化核心依赖
 selenium>=4.20
 # CDP 网络抓包（browser_mcp.py 的 import websocket 来自此包）
 websocket-client>=1.8
 
-# agent.py 依赖
-deepagents>=0.7
-langchain-openai>=1.4
-
-# 按 project_memory 约定，API key 从 agent.env 读取
+# 从 agent.env 读取配置
 python-dotenv>=1.2
-
-# MCP 工具集成：把 browser_mcp.py 的 MCP 工具转成 LangChain BaseTool
-langchain-mcp-adapters>=0.3

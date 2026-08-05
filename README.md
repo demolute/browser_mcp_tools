@@ -24,25 +24,12 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-**2. 准备配置**
+**2. 获取代码并启动**
 
 ```bash
 git clone https://github.com/demolute/browser_mcp_tools.git
 cd browser_mcp_tools
-cp agent.env.example agent.env   # Windows: copy agent.env.example agent.env
-```
 
-编辑 `agent.env`，填入你的 LLM API key（用于 `open_browser` 工具的自然语言 URL 推断）：
-
-```dotenv
-MODEL_NAME=deepseek-chat
-OPENAI_API_KEY=sk-your-api-key-here
-OPENAI_BASE_URL=https://api.deepseek.com/v1
-```
-
-**3. 启动**
-
-```bash
 # stdio 模式（本地 MCP 客户端调用）
 uv run browser_mcp.py
 
@@ -71,43 +58,19 @@ python browser_mcp.py
 - **Python** ≥ 3.10（uv 方式下 uv 会自动管理 Python 版本，无需手动装）
 - **Google Chrome** 或 Chromium 内核浏览器（Edge / Chromium 均可）
   - 默认自动搜索标准安装路径
-  - 非默认位置请在 `agent.env` 中配置 `CHROME_PATH`（见下文）
+  - 非默认位置请配置 `CHROME_PATH`（见下文）
 
 ## 配置项说明
 
-所有配置通过 `agent.env` 文件管理（参考 `agent.env.example`）：
+所有配置为可选项，通过环境变量或 `agent.env` 文件管理：
 
-| 配置项 | 必填 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `MODEL_NAME` | 是 | - | LLM 模型名，任意 OpenAI 兼容 API |
-| `OPENAI_API_KEY` | 是 | - | LLM API 密钥 |
-| `OPENAI_BASE_URL` | 是 | - | LLM API 地址 |
-| `MCP_TRANSPORT` | 否 | `stdio` | 传输模式：`stdio` / `sse` / `streamable-http` |
-| `MCP_HOST` | 否 | `127.0.0.1` | SSE/HTTP 模式监听地址 |
-| `MCP_PORT` | 否 | `8765` | SSE/HTTP 模式监听端口 |
-| `CHROME_PATH` | 否 | 自动搜索 | 浏览器可执行文件路径 |
-| `REMOTE_DEBUG_PORT` | 否 | `9222` | Chrome 远程调试端口 |
-
-### LLM 配置示例
-
-支持任意 OpenAI 兼容 API：
-
-```dotenv
-# DeepSeek 官方
-MODEL_NAME=deepseek-chat
-OPENAI_API_KEY=sk-xxx
-OPENAI_BASE_URL=https://api.deepseek.com/v1
-
-# OpenAI
-MODEL_NAME=gpt-4o-mini
-OPENAI_API_KEY=sk-xxx
-OPENAI_BASE_URL=https://api.openai.com/v1
-
-# 本地 Ollama
-MODEL_NAME=qwen2.5:7b
-OPENAI_API_KEY=ollama
-OPENAI_BASE_URL=http://localhost:11434/v1
-```
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `CHROME_PATH` | 自动搜索 | 浏览器可执行文件路径 |
+| `MCP_TRANSPORT` | `stdio` | 传输模式：`stdio` / `sse` / `streamable-http` |
+| `MCP_HOST` | `127.0.0.1` | SSE/HTTP 模式监听地址 |
+| `MCP_PORT` | `8765` | SSE/HTTP 模式监听端口 |
+| `REMOTE_DEBUG_PORT` | `9222` | Chrome 远程调试端口 |
 
 ### CHROME_PATH 配置示例
 
@@ -139,7 +102,7 @@ MCP_PORT=8765
 
 ### stdio 模式
 
-适用于 Claude Desktop、Trae 等 MCP 客户端的本地子进程调用。所有配置项可直接写在 `env` 字段中，无需创建 `agent.env` 文件：
+适用于 Claude Desktop、Trae 等 MCP 客户端的本地子进程调用。所有配置项可直接写在 `env` 字段中：
 
 ```json
 {
@@ -148,23 +111,12 @@ MCP_PORT=8765
       "command": "uv",
       "args": ["run", "/absolute/path/to/browser_mcp.py"],
       "env": {
-        "MCP_TRANSPORT": "stdio",
-        "CHROME_PATH": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-        "MODEL_NAME": "deepseek-chat",
-        "OPENAI_API_KEY": "sk-your-api-key-here",
-        "OPENAI_BASE_URL": "https://api.deepseek.com/v1"
+        "CHROME_PATH": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
       }
     }
   }
 }
 ```
-
-**必填项**：
-- `MODEL_NAME` / `OPENAI_API_KEY` / `OPENAI_BASE_URL`：LLM 配置（用于 `open_browser` 工具的自然语言 URL 推断）
-
-**可选项**：
-- `CHROME_PATH`：浏览器可执行文件路径。Chrome 装在非默认位置或使用 Edge/Chromium 时填写
-- `MCP_TRANSPORT`：传输模式，默认 `stdio`
 
 **CHROME_PATH 各平台示例**：
 
@@ -177,10 +129,11 @@ MCP_PORT=8765
 
 > 不使用 uv 时，`command` 改为 Python 解释器路径，`args` 改为 `["/absolute/path/to/browser_mcp.py"]`。
 > Windows 路径中的反斜杠在 JSON 里需转义为双反斜杠 `\\`。
+> Chrome 装在默认位置时可省略 `CHROME_PATH`，会自动搜索。
 
 ### SSE 模式
 
-先在终端启动 Server（通过环境变量或 `agent.env` 传入配置）：
+先在终端启动 Server：
 
 ```bash
 MCP_TRANSPORT=sse uv run browser_mcp.py
@@ -198,8 +151,6 @@ MCP_TRANSPORT=sse uv run browser_mcp.py
   }
 }
 ```
-
-> SSE 模式下 Server 单独运行，浏览器路径等配置通过 `agent.env` 或启动命令的环境变量传入，客户端只需连接 URL。
 
 ## 工具列表
 
@@ -229,15 +180,11 @@ MCP_TRANSPORT=sse uv run browser_mcp.py
 
 ### 启动时报 "未找到 Chrome"
 
-Chrome 装在非默认位置，或使用 Edge/Chromium。在 `agent.env` 配置：
+Chrome 装在非默认位置，或使用 Edge/Chromium。配置 `CHROME_PATH` 指向浏览器可执行文件：
 
 ```dotenv
 CHROME_PATH=/path/to/your/browser
 ```
-
-### `open_browser` 报 LLM 调用失败
-
-检查 `agent.env` 中的 `OPENAI_API_KEY` 和 `OPENAI_BASE_URL` 是否正确。LLM 不可用时会自动降级为规则映射（支持常见网站关键词，如 "b站"/"github"/"百度"）。
 
 ### SSE 模式下客户端无法连接
 

@@ -7,7 +7,6 @@
 #     "python-dotenv>=1.2",
 #     "uvicorn>=0.30",
 #     "sse-starlette>=2.1",
-#     "langchain-openai>=1.4",
 # ]
 # ///
 """浏览器 MCP Server：提供 57 个浏览器自动化工具，支持 stdio/SSE 双模式。
