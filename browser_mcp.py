@@ -76,11 +76,33 @@ def _is_chrome_running() -> bool:
 
 
 def _find_chrome() -> str | None:
-    """查找 Chrome 可执行文件路径。"""
+    """查找 Chrome 可执行文件路径。
+
+    优先级：
+    1. 环境变量 CHROME_PATH（用户显式指定，适合 Chrome 装在非默认位置或使用 Edge/Chromium）
+    2. 各平台默认安装路径（Windows/macOS/Linux）
+    """
+    # 1) 用户通过环境变量显式指定
+    env_path = os.environ.get("CHROME_PATH", "").strip().strip('"').strip("'")
+    if env_path:
+        if Path(env_path).exists():
+            return env_path
+        # 路径配置错误时给出明确提示，避免静默回退导致困惑
+        print(f"[browser_mcp] 警告: CHROME_PATH 指定的路径不存在: {env_path}，将回退到默认搜索")
+
+    # 2) 各平台默认安装路径
     candidates = [
+        # Windows
         r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
         str(Path.home() / r"AppData\Local\Google\Chrome\Application\chrome.exe"),
+        # macOS
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        # Linux（包管理器安装的常见路径）
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
     ]
     for p in candidates:
         if Path(p).exists():
@@ -396,7 +418,7 @@ def open_browser(intent: str) -> str:
     import time
     chrome_path = _find_chrome()
     if chrome_path is None:
-        return "未找到 Chrome，请安装 Google Chrome"
+        return "未找到 Chrome，请安装 Google Chrome，或在 agent.env 中配置 CHROME_PATH 指定浏览器路径"
     subprocess.Popen(
         [
             chrome_path,
